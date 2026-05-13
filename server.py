@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from elgamal import ElGamal
+from crypto import ElGamal
 
 
 app = FastAPI()

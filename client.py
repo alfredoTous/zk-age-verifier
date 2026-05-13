@@ -1,5 +1,5 @@
 import requests
-from elgamal import ElGamal
+from crypto import ElGamal
 
 SERVER = "http://127.0.0.1:8000"
 
