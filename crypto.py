@@ -64,6 +64,20 @@ class ElGamal():
 
         return plain
 
+    def encrypt_exponential(self, x: int):
+        if self.public_key is None:
+            raise Exception("Public Key is empty, use .key_gen to initialize")
+
+        p = self.public_key["p"]
+        g = self.public_key["g"]
+        h = self.public_key["h"]
+
+        r = secrets.randbelow(self.p - 2) + 1
+        c1 = pow(g, r, p)
+        c2 = pow(g, x, p) * pow(h, r, p) % p  # g^x * h^r
+
+        return {"c1": c1, "c2": c2, "r": r}
+
 
 
 def commit(value, elgamal: ElGamal):
@@ -150,26 +164,19 @@ def verify_proof(
     return left == right
 
 
+# Descompose x, 7 bits fit in range [0, 127]
+def bit_decompose(x: int, n_bits: int = 7):
+    assert 0 <= x <= 120, f"x={x} outside range [0, 120]"
+    bits = [(x >> i) & 1 for i in range(n_bits)]
+    assert sum(b * (2**i) for i, b in enumerate(bits)) == x  # sanity check
+    return bits
+
+# commitment for each bit
+def commit_bits(bits: list, elgamal: ElGamal):
+    commitments = []
+    for b in bits:
+        data = commit(b, elgamal)
+        commitments.append(data)
+    return commitments
 
 
-elgamal = ElGamal()
-
-commitment_data = commit(
-    25,
-    elgamal
-)
-
-proof = generate_proof(
-    commitment_data["commitment"],
-    25,
-    commitment_data["r"],
-    elgamal
-)
-
-valid = verify_proof(
-    commitment_data["commitment"],
-    proof,
-    elgamal 
-)
-
-print(valid)
